@@ -1,1 +1,10 @@
+.gitignore
 *~
+api_info.txt
+api_info2.txt
+info_high.txt
+info_low.txt
+info_med.txt
+.vscode/settings.json
+Backup/*
+test.json
