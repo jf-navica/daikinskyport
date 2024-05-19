@@ -39,7 +39,7 @@ UNDO_UPDATE_LISTENER = "undo_update_listener"
 
 NETWORK = None
 
-PLATFORMS = [Platform.SENSOR, Platform.WEATHER, Platform.CLIMATE]
+PLATFORMS = [Platform.SENSOR, Platform.WEATHER, Platform.CLIMATE, Platform.SWITCH]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up DaikinSkyport as config entry."""
@@ -90,13 +90,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 #    entry.async_on_unload(entry.add_update_listener(update_listener))
 
 
-    for platform in PLATFORMS:
-        if entry.options.get(platform, True):
-            coordinator.platforms.append(platform)
-            hass.async_add_job(
-                hass.config_entries.async_forward_entry_setup(entry, platform)
-            )
-
+    hass.async_create_task(hass.config_entries.async_forward_entry_setups(entry, PLATFORMS))
 
     undo_listener = entry.add_update_listener(update_listener)
 
@@ -131,7 +125,7 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 async def update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Update listener."""
     _LOGGER.debug("Update listener: %s", str(entry))
-    await hass.config_entries.async_reload(entry.entry_id)
+#    await hass.config_entries.async_reload(entry.entry_id)
 
 
 class DaikinSkyportData:
@@ -164,6 +158,7 @@ class DaikinSkyportData:
         """Update data via library."""
         try:
             current = await self.hass.async_add_executor_job(self.daikinskyport.update)
+            _LOGGER.debug("Daikin Skyport _async_update_data")
         except ExpiredTokenError:
             _LOGGER.debug("Daikin Skyport tokens expired")
             await self.async_refresh()
